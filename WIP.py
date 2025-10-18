@@ -468,3 +468,5 @@ def template(r,g,b,paltype,temptype):
         tfcr.alignment = PP_ALIGN.LEFT
 
         prs.save("postertemplate2.pptx")
+
+template(sr,sg,sb,paltype,temptype)
