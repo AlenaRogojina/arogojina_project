@@ -10,14 +10,6 @@ from pptx.oxml.xmlchemy import OxmlElement
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 
-# Grab input color (for 1)
-#sr, sg, sb = int(input("Enter the three rgb values:"))
-sr = int(input("Enter the r value:"))
-sg = int(input("Enter the g value:"))
-sb = int(input("Enter the b value:"))
-
-
-# Generate random color (for 2)
 def randomcolor():
     r = random.randint(0,255)
     g = random.randint(0,255)
@@ -25,7 +17,23 @@ def randomcolor():
 
     return r, g, b
 
-randr, randg, randb = randomcolor()
+colorsource = input("Would you like to enter values or get a random color? Type 'enter' or 'random'.")
+def start(colorsource):
+    if colorsource == "enter":
+        # Grab input color (for 1)
+        #sr, sg, sb = int(input("Enter the three rgb values:"))
+        sr = int(input("Enter the r value:"))
+        sg = int(input("Enter the g value:"))
+        sb = int(input("Enter the b value:"))
+        print("Your starting rgb values are: r:" + str(sr) +" g:" + str(sg) + " b:" + str(sb))
+        return sr, sg, sb
+    elif colorsource == "random":
+        # Generate random color (for 2)
+        sr,sg,sb = randomcolor()
+        print("Your random rgb values are: r:" + str(sr) +" g:" + str(sg) + " b: " + str(sb))
+        return sr, sg, sb
+
+sr, sg, sb = start(colorsource)
 
 # Generate new colors based on input color
 def complementary(r, g, b):
@@ -108,7 +116,7 @@ def palettedisplay(r,g, b, paltype):
         draw.rectangle((0, 0, 250, 300), fill=(nr, ng, nb), outline=(nr, ng, nb)) #add complementary color rectangle
         im.save('pillow_imagedraw_complementary2.jpg', quality=95) #save file
     elif paltype == "analogous":
-        nr, ng, nb = analogous(r, g, b)
+        analog = analogous(r, g, b)
         imanalogous = Image.new('RGB', (500, 300), (r, g, b)) #create new image
         draw = ImageDraw.Draw(imanalogous) #draw
 
@@ -116,7 +124,7 @@ def palettedisplay(r,g, b, paltype):
         draw.rectangle((500//3, 0, (500//3 + 500//3), 300), fill=(analog[3], analog[4], analog[5])) #second
         imanalogous.save('pillow_imagedraw_analogous2.jpg', quality=95) #save file
     elif paltype == "tetrad":
-        nr, ng, nb = tetrad(r, g, b)
+        tet = tetrad(r, g, b)
         imtetrad = Image.new('RGB', (500, 300), (r, g, b)) #create new image
         draw = ImageDraw.Draw(imtetrad) #draw
 
@@ -130,7 +138,7 @@ def palettedisplay(r,g, b, paltype):
 palettedisplay(sr, sg, sb, paltype)
 
 # Output template
-temptype = input("What kind of template would you like? Type in 'presentation' or 'poster'.")
+temptype = input("What kind of template would you like? Type in 'presentation', 'poster', or 'none'.")
 def template(r,g,b,paltype,temptype):
     if temptype == "presentation":
         compr, compg, compb = complementary(r, g, b)
@@ -271,6 +279,9 @@ def template(r,g,b,paltype,temptype):
         prs.save("prestemplate-function.pptx")
 
     elif temptype == "poster":
+        compr, compg, compb = complementary(r, g, b)
+        analog = analogous(r,g,b)
+        tet = tetrad(r,g,b)
         prs = Presentation()
         prs.slide_width = Inches(36)
         prs.slide_height = Inches(24)
@@ -468,5 +479,7 @@ def template(r,g,b,paltype,temptype):
         tfcr.alignment = PP_ALIGN.LEFT
 
         prs.save("postertemplate2.pptx")
+    elif temptype == "none":
+        print("You did not choose to download a presentation or poster template.")
 
 template(sr,sg,sb,paltype,temptype)
