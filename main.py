@@ -2,13 +2,12 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import colorchooser
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 from PIL import Image, ImageDraw
 import random
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
-from PIL import Image
 from pptx.oxml.ns import qn
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.enum.text import PP_ALIGN
@@ -22,7 +21,7 @@ class Colors_app(tk.Tk):
         self.canvas = tk.Canvas(self, width=600, height=400) #define canvas
         self.canvas.grid(row=2, column=0, columnspan=4, padx=10, pady=10)
 
-        current_rgb = (0, 0, 0)
+        current_rgb = (0, 0, 0) #so each method of getting starting RGB values sets global value and can be used by next method
 
         self.listbtn = tk.Button(self, text="Choose a Color", command=self.colorpicker) #use colorpicker function
         self.listbtn.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky='we')
@@ -30,44 +29,77 @@ class Colors_app(tk.Tk):
         self.pickbtn = tk.Button(self, text="Open Image", command=self.open_image) #use open image function
         self.pickbtn.grid(row=0, column=2, padx=10, pady=10, sticky='we')
 
-        self.canvas.bind("<Button-1>", self.get_color) #use get color function
+        self.canvas.bind("<Motion>", self.track_cursor) #use track cursor function
+        self.cursor_pos = (0, 0) #default position 0,0
+        self.img_data = None #sets image to none displayed
+
+        self.canvas.bind("<Button-1>", self.get_color) #use get color function on click
+
+        # Create a label for the color swatch
+        self.color_label = tk.Label(self.canvas, text="", bg="white", fg="black", borderwidth=1, relief="solid")
+        self.color_label.place_forget()  # Hide initially
 
         self.randombtn = tk.Button(self, text="Random Color!", command=self.random_color) #choose a random color
         self.randombtn.grid(row=0, column=3, padx=10, pady=10, sticky='we')
 
-        self.palettelbl = tk.Label(self, text="Choose a Palette Type:")
+        self.palettelbl = tk.Label(self, text="Choose a Palette Type:") #Label for palette type
         self.palettelbl.grid(row=1, column=0, padx=10, pady=10, sticky='we')
 
-        self.selected = tk.StringVar()
+        self.selected = tk.StringVar() #creating radio buttons and tying clicking them to functions
         self.r1 = tk.Radiobutton(self, text='Complementary', value='Complementary', variable=self.selected, command=self.complementary)
         self.r1.grid(row=1, column=1, padx=10, pady=10, sticky='we')
         self.r2 = tk.Radiobutton(self, text='Analogous', value='Analogous', variable=self.selected, command=self.analogous)
         self.r2.grid(row=1, column=2, padx=10, pady=10, sticky='we')
-        self.r3 = tk.Radiobutton(self, text='Triadic', value='Triadic', variable=self.selected)
+        self.r3 = tk.Radiobutton(self, text='Triadic', value='Triadic', variable=self.selected, command=self.triadic)
         self.r3.grid(row=1, column=3, padx=10, pady=10, sticky='we')
+        self.selected.set('None')
+    
+    def setimage(self): #method for setting each image as the display image, to avoid typing same thing over 3 times
+        self.canvas.delete("") #deletes what's diplayed on canvas currently
+        self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img, tags="displayed_img") #creates image based off of what is entered above inside function
+        self.canvas.image = self.tk_img
+        self.canvas.img_data = self.img #sets image data (in memory rather than displayed like canvas)
+        self.canvas.mode = "color"
+
+    def colorpicker(self):
+        global current_rgb #sets current_rgb to global so multiple functions can set/access it
+        rgbwithhex = colorchooser.askcolor(title="Choose a color") #uses built-in color chooser, gives it a title
+        current_rgb = rgbwithhex[0] #returns a tuple with rgb and hexcode, so only want the rgb portion
+        print("Selected color:", current_rgb)
+
+        self.setimage()
     
     def open_image(self):
         file_path = filedialog.askopenfilename() #Open file
         if file_path:
             self.img = Image.open(file_path) #The chosen file
             self.img.thumbnail((600, 400))  # Resize for display
+            self.img_data = self.img.convert("RGB") #sets image data for whole class to currently display opened file
             self.tk_img = ImageTk.PhotoImage(self.img)
 
-            self.canvas.delete("displayed_img")
-            self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img, tags="displayed_img") #place preview image to pick from in the top left
-            self.canvas.image = self.tk_img  # Keep a reference
-            self.canvas.img_data = self.img  # Store the PIL image for color picking
-            self.canvas.mode = "image"
+            self.setimage()
 
-    def get_color(self,event):
-        global current_rgb
-        x, y = event.x, event.y #get coordinates for click
-        if hasattr(self.canvas, 'img_data'):
+    def track_cursor(self, event):
+        self.cursor_pos = (event.x, event.y) #gets up to date x and y coordinates of cursor as it moves
+        if self.img_data:
             try:
-                current_rgb = self.canvas.img_data.getpixel((x, y)) #gets pixel where clicked and its rgb value
-                print(f"Clicked at ({x}, {y}) - Color: {current_rgb}")
+                rgb = self.img_data.getpixel((self.cursor_pos)) #gets RGB of where cursor is on the image
+                hex_color = "#%02x%02x%02x" % rgb #convert to hex because next line needs hex not RGB
+                self.color_label.config(bg=hex_color, text=rgb) #shows color and its RGB value
+                self.color_label.place(x=event.x + 10, y=event.y + 10) #places a bit to the side of the cursor
             except IndexError:
-                print("Clicked outside the image bounds.")
+                self.color_label.place_forget() #does not display outside of image
+
+    def get_color(self, event):
+        global current_rgb
+        x, y = event.x, event.y #same as above
+        if self.img_data:
+            try:
+                rgb = self.img_data.getpixel((x, y)) #
+                current_rgb = rgb
+                print(f"Cursor at ({x}, {y}) - Color: {current_rgb}")
+            except IndexError:
+                print("Cursor is outside the image bounds.")
 
     def random_color(self):
         global current_rgb
@@ -78,28 +110,10 @@ class Colors_app(tk.Tk):
         self.img = Image.new('RGB', (600,600), (current_rgb)) #create new image with original rgb as bg
         self.tk_img = ImageTk.PhotoImage(self.img)
 
-        self.canvas.delete("")
-        self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img, tags="displayed_img")
-        self.canvas.image = self.tk_img
-        self.canvas.img_data = self.img
-        self.canvas.mode = "color"
-
-    def colorpicker(self):
-        global current_rgb
-        rgbwithhex = colorchooser.askcolor(title="Choose a color")
-        current_rgb = rgbwithhex[0]
-        print("Selected color:", current_rgb)
-
-        self.img = Image.new('RGB', (600,600), (current_rgb)) #create new image with original rgb as background
-        self.tk_img = ImageTk.PhotoImage(self.img)
-
-        self.canvas.delete("")
-        self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img, tags="displayed_img")
-        self.canvas.image = self.tk_img
-        self.canvas.img_data = self.img
-        self.canvas.mode = "color"
+        self.setimage()
     
     def complementary(self):
+        self.img_data = None #so the color swatch on hover stops
         global current_rgb
         r, g, b = current_rgb
 
@@ -114,13 +128,10 @@ class Colors_app(tk.Tk):
         self.draw.rectangle((0, 0, 300, 402), fill=(newr, newg, newb), outline=(newr, newg, newb))
 
         self.tk_img = ImageTk.PhotoImage(self.img)
-        self.canvas.delete("")
-        self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img, tags="displayed_img")
-        self.canvas.image = self.tk_img
-        self.canvas.img_data = self.img
-        self.canvas.mode = "color"
+        self.setimage()
 
     def analogous(self):
+        self.img_data = None #so the color swatch on hover stops
         global current_rgb
         r, g, b = current_rgb
 
@@ -139,17 +150,47 @@ class Colors_app(tk.Tk):
         print([newr1, newg1, newb1, newr2, newg2, newb2])
 
         self.img = Image.new('RGB', (600, 600), (r, g, b)) #create new image
-        draw = ImageDraw.Draw(self.img) #draw
-        draw.rectangle((0, 0, 600//3, 402), fill=(newr1, newg1, newb1)) #draw first analogous color rectangle
-        draw.rectangle((600//3, 0, (600//3 + 600//3), 402), fill=(newr2, newg2, newb2)) #second
+        self.draw = ImageDraw.Draw(self.img) #draw
+        self.draw.rectangle((0, 0, 600//3, 402), fill=(newr1, newg1, newb1)) #draw first analogous color rectangle
+        self.draw.rectangle((600//3, 0, (600//3 + 600//3), 402), fill=(newr2, newg2, newb2)) #second
 
         self.tk_img = ImageTk.PhotoImage(self.img)
-        self.canvas.delete("")
-        self.canvas.create_image(0, 0, anchor="nw", image=self.tk_img, tags="displayed_img")
-        self.canvas.image = self.tk_img
-        self.canvas.img_data = self.img
-        self.canvas.mode = "color"
+        self.setimage()
+    
+    def triadic(self):
+        self.img_data = None #so the color swatch on hover stops
+        global current_rgb
+        r, g, b = current_rgb
 
+        newr1 = r + 71
+        if newr1 > 255:
+            newr1 = g - 71 #make sure new values aren't higher than 255
+        newb1 = b
+        newg1 = g - 46
+        if newg1 < 0:
+            newg1 = g + 46 #make sure new values aren't lower than 0
+        newb1 = b
+        newb1 = b
+
+        newr2 = r + 78
+        if newr2 > 255:
+            newr2 = g - 78
+        newg2 = g - 14
+        if newg2 < 0:
+            newg2 = g + 14
+        newb2 = b - 78
+        if newb2 < 0:
+            newb2 = g + 78
+
+        print([newr1, newg1, newb1, newr2, newg2, newb2])
+
+        self.img = Image.new('RGB', (600, 600), (r, g, b)) #create new image
+        self.draw = ImageDraw.Draw(self.img) #draw
+        self.draw.rectangle((0, 0, 600//3, 402), fill=(newr1, newg1, newb1)) #draw first triadic color rectangle
+        self.draw.rectangle((600//3, 0, (600//3 + 600//3), 402), fill=(newr2, newg2, newb2)) #second
+
+        self.tk_img = ImageTk.PhotoImage(self.img)
+        self.setimage()
 
 app = Colors_app()
 app.mainloop()
