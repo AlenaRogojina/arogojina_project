@@ -66,6 +66,8 @@ class Colors_app(tk.Tk):
         rgbwithhex = colorchooser.askcolor(title="Choose a color") #uses built-in color chooser, gives it a title
         current_rgb = rgbwithhex[0] #returns a tuple with rgb and hexcode, so only want the rgb portion
         print("Selected color:", current_rgb)
+        self.img = Image.new('RGB', (600,600), (current_rgb)) #create new image with original rgb as bg
+        self.tk_img = ImageTk.PhotoImage(self.img)
 
         self.setimage()
     
