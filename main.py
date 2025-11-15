@@ -22,9 +22,9 @@ class Colors_app(tk.Tk):
         self.canvas = tk.Canvas(self, width=600, height=400) #define canvas
         self.canvas.grid(row=2, column=0, columnspan=4, padx=10, pady=10)
 
-        self.current_rgb = (0, 0, 0) #so each method of getting starting RGB values sets value and can be used by multiple methods
-        self.palette_rgb1 = (0,0,0) #sets complementary or first analogous/triadic color that can be accessed by all methods (including poster and pres)
-        self.palette_rgb2 = (0,0,0) #sets second analogous/traidic color
+        self.current_rgb = (None,None,None) #so each method of getting starting RGB values sets value and can be used by multiple methods. Changed to None in case color they are interested in is black (0,0,0)
+        self.palette_rgb1 = (None,None,None) #sets complementary or first analogous/triadic color that can be accessed by all methods (including poster and pres)
+        self.palette_rgb2 = (None,None,None) #sets second analogous/traidic color
 
         self.pickbtn = tk.Button(self, text="Choose a Color", command=self.colorpicker) #use colorpicker function
         self.pickbtn.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky='we')
@@ -125,6 +125,7 @@ class Colors_app(tk.Tk):
         self.setimage()
     
     def complementary(self):
+        self.palette_rgb2 = (None,None,None) #was running into issue where if analogous was chosen first, template created, then complementary chosen and template created, kept third color in the powerpoint
         self.img_data = None #so the color swatch on hover stops
         self.color_label.place_forget()
         #global current_rgb
@@ -248,7 +249,7 @@ class Colors_app(tk.Tk):
         run.text = "Title and Names Here"
         run.font.size = Pt(72)
         run.font.bold = True
-        if self.palette_rgb2 == (0,0,0): #if complementary (no third color)
+        if self.palette_rgb2 == (None,None,None): #if complementary (no third color)
             run.font.color.rgb = RGBColor(self.palette_rgb1[0], self.palette_rgb1[1], self.palette_rgb1[2])
         else:
             run.font.color.rgb = RGBColor(self.palette_rgb2[0], self.palette_rgb2[1], self.palette_rgb2[2])
@@ -321,7 +322,7 @@ class Colors_app(tk.Tk):
         tresults.fill.fore_color.rgb = RGBColor(255, 255, 255)
         #tfresults = tresults.text_frame
 
-        if self.palette_rgb2 != (0,0,0):
+        if self.palette_rgb2 != (None,None,None):
             #Explaining third color
             thirdcol = slide.shapes.add_textbox(Inches(13), Inches(5.5), Inches(9), Inches(1))
             tftc = thirdcol.text_frame.paragraphs[0]
@@ -360,7 +361,7 @@ class Colors_app(tk.Tk):
         # Take Home Point
         thp = slide.shapes.add_textbox(Inches(24.3), Inches(17.4), Inches(11), Inches(0.7))
         thp.fill.solid()
-        if self.palette_rgb2 == (0,0,0): #if complementary (no third color)
+        if self.palette_rgb2 == (None,None,None): #if complementary (no third color)
             thp.fill.fore_color.rgb = RGBColor(self.palette_rgb1[0], self.palette_rgb1[1], self.palette_rgb1[2])
         else:
             thp.fill.fore_color.rgb = RGBColor(self.palette_rgb2[0], self.palette_rgb2[1], self.palette_rgb2[2])
@@ -390,6 +391,101 @@ class Colors_app(tk.Tk):
         tfcr.alignment = PP_ALIGN.LEFT
 
         prs.save("postertemplate.pptx")
+
+    def pres(self):
+        prs = Presentation()
+        prs.slide_width = Inches(12)
+        prs.slide_height = Inches(6)
+        # Use the blank slide layout (index 6) for a clean slide
+        # other options: 0: Title Slide 1: Title and Content 2: Section Header 3: Two Content 4: Comparison 5: Title Only 6: Blank 7: Content with Caption 8: Picture with Caption
+        blank = prs.slide_layouts[6]
+        titleslide = prs.slides.add_slide(blank)
+
+        # Background color (original color)
+        bg = titleslide.background
+        fill = bg.fill
+        fill.solid()
+        fill.fore_color.rgb = RGBColor(self.current_rgb[0], self.current_rgb[1], self.current_rgb[2])
+
+        # Title
+        title_box = titleslide.shapes.add_textbox(Inches(1), Inches(1.5), Inches(10), Inches(2.5))
+        p = title_box.text_frame.paragraphs[0]
+        run = p.add_run()
+        run.text = "Title Here"
+        run.font.size = Pt(70)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(255, 255, 255)
+        p.alignment = PP_ALIGN.CENTER
+
+        #title line
+        tline = titleslide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(4), Inches(12), Inches(0.3))
+        tline.fill.solid()
+        tline.fill.fore_color.rgb = RGBColor(self.palette_rgb1[0], self.palette_rgb1[1], self.palette_rgb1[2])
+        tline.shadow.inherit = False
+        tline.line.fill.background()
+        
+        if self.palette_rgb2 != (None,None,None):
+            #Title Box
+            tbox = titleslide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(4.3), Inches(12), Inches(1.7))
+            tbox.fill.solid()
+            tbox.fill.fore_color.rgb = RGBColor(self.palette_rgb2[0], self.palette_rgb2[1], self.palette_rgb2[2])
+            tbox.shadow.inherit = False
+            tbox.line.fill.background()
+
+        #Names
+        name_box = titleslide.shapes.add_textbox(Inches(1), Inches(4.5), Inches(10), Inches(2))
+        name = name_box.text_frame.paragraphs[0]
+        runn = name.add_run()
+        runn.text = "Additional Info Here"
+        runn.font.size = Pt(30)
+        runn.font.bold = True
+        runn.font.color.rgb = RGBColor(255, 255, 255)
+        name.alignment = PP_ALIGN.CENTER
+
+        #Second Slide--info slide
+        secondslide = prs.slides.add_slide(blank)
+        # Background color for first info slide (original color)
+        bg2 = secondslide.background
+        bg2.fill.solid()
+        bg2.fill.fore_color.rgb = RGBColor(self.current_rgb[0], self.current_rgb[1], self.current_rgb[2])
+
+        sbox = secondslide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(12), Inches(1.5))
+        sbox.fill.solid()
+        sbox.fill.fore_color.rgb = RGBColor(self.palette_rgb1[0], self.palette_rgb1[1], self.palette_rgb1[2])
+        sbox.shadow.inherit = False
+        sbox.line.fill.background()
+
+        if self.palette_rgb2 != (None,None,None):
+            #Second Slide Second Line
+            sbox = secondslide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(1.5), Inches(12), Inches(0.3))
+            sbox.fill.solid()
+            sbox.fill.fore_color.rgb = RGBColor(self.palette_rgb2[0], self.palette_rgb2[1], self.palette_rgb2[2])
+            sbox.shadow.inherit = False
+            sbox.line.fill.background()
+
+        # Second Slide Title
+        two_title_box = secondslide.shapes.add_textbox(Inches(0.75), Inches(0.75), Inches(10), Inches(2))
+        twotitle = two_title_box.text_frame.paragraphs[0]
+        runtwo = twotitle.add_run()
+        runtwo.text = "Title Here"
+        runtwo.font.size = Pt(40)
+        runtwo.font.bold = True
+        runtwo.font.color.rgb = RGBColor(255, 255, 255)
+        twotitle.alignment = PP_ALIGN.LEFT
+
+        #Second Slide Text
+        ttwo = secondslide.shapes.add_textbox(Inches(0.75), Inches(1.75), Inches(10), Inches(4))
+        tftwo = ttwo.text_frame
+        items = ["point 1", "point 2", "point 3"]
+        for i, txt in enumerate(items):
+            para = tftwo.paragraphs[0] if i == 0 else tftwo.add_paragraph()
+            para.text = txt
+            para.level = 0
+            self.force_bullet(para)
+            para.font.size = Pt(20)
+            para.font.color.rgb = RGBColor(255,255,255)
+
+        prs.save("prestemplate.pptx")
 
 app = Colors_app()
 app.mainloop()
