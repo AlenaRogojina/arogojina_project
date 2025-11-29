@@ -456,7 +456,8 @@ class Colors_app(tk.Tk):
         runcr.font.color.rgb = RGBColor(255, 255, 255)
         tfcr.alignment = PP_ALIGN.LEFT
 
-        prs.save("postertemplate.pptx")
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        prs.save("poster" + timestr + ".pptx")
 
     def pres(self):
         prs = Presentation()
@@ -551,7 +552,8 @@ class Colors_app(tk.Tk):
             para.font.size = Pt(20)
             para.font.color.rgb = RGBColor(255,255,255)
 
-        prs.save("prestemplate.pptx")
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        prs.save("presentation" + timestr + ".pptx")
 
 app = Colors_app()
 app.mainloop()
