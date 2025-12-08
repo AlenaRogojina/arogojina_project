@@ -4,6 +4,7 @@ tkinter
 PIL
 random
 pptx
+pyperclip
 pptx.util
 pptx.dml.color
 pptx.oxml.ns

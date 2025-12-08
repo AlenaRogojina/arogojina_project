@@ -1,6 +1,7 @@
 import time
 import colorsys
 import tkinter as tk
+import pyperclip
 from tkinter import filedialog
 from tkinter import colorchooser
 from PIL import Image, ImageTk, ImageDraw
@@ -58,13 +59,15 @@ class Colors_app(tk.Tk):
         self.selected.set('None') #starts with none of the radio buttons selected
 
         self.values2 = tk.Label(self, text = "") #Label for displaying RGB values
-        self.values2.grid(row=3, column=0, padx=10, pady=10, sticky='we')
+        self.values2.grid(row=3, column=0, columnspan=4, padx=15, pady=10, sticky='w')
 
         self.values3 = tk.Label(self, text = "") #Label for displaying RGB values
-        self.values3.grid(row=3, column=1, columnspan=2, padx=10, pady=10, sticky='we')
+        self.values3.place(relx = 0.5, 
+                   rely = 0.89,
+                   anchor = 'center')
 
         self.values1 = tk.Label(self, text = "") #Label for displaying RGB values
-        self.values1.grid(row=3, column=3, padx=10, pady=10, sticky='we')
+        self.values1.grid(row=3, column=2, columnspan=4, padx=20, pady=10, sticky='e')
         
         self.posterbtn = tk.Button(self, text="Download Poster Template (.pptx)", command=self.poster) #use poster function
         self.posterbtn.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='we')
