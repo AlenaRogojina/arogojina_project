@@ -250,8 +250,8 @@ class Colors_app(tk.Tk):
         #global current_rgb
         r, g, b = self.current_rgb
         h, s, v = self.rgb_to_hsv(r, g, b)
-        h1 = (h + 0.333) % 1.0  # 30 degrees around the hue circle
-        h2 = (h - 0.333) % 1.0  # 30 degrees around the hue circle in opposite direction
+        h1 = (h + 0.333) % 1.0  # 120 degrees around the hue circle
+        h2 = (h - 0.333) % 1.0  # 120 degrees around the hue circle in opposite direction
         self.palette_rgb1 = self.hsv_to_rgb(h1, s, v)
         self.palette_rgb2 = self.hsv_to_rgb(h2, s, v)
 
