@@ -3,6 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 keys.py
+old/
 #figure out if I need the above line?
 
 # C extensions
