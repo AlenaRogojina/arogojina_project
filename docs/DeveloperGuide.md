@@ -42,7 +42,7 @@ The program is created inside of a TkInter interface. First inside the init are 
 4. Triadic will generate two colors that are 120 degrees away from the starting color in either direction on the color wheel.
 - This is handled by the triadic() function. Adding and subtracting .33 and using modulo 1.0 finds the hue values that are 120 degrees away from the starting color.
 
-- Select the desired palette type to generate a previous of the 2-3 colors. RGB values will also be generated and displayed below the color blocks.
+- Select the desired palette type to generate a preview of the 2-3 colors. RGB values will also be generated and displayed below the color blocks.
   - Note that in Release v1.0, the RGB values are not able to be highlighted and copied.
 <img width="1217" height="985" alt="Screenshot 2025-12-08 104516" src="https://github.com/user-attachments/assets/ebfef3b6-2435-4394-b895-11e549739b94" />
 
