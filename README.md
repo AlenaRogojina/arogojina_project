@@ -30,7 +30,8 @@ Created using Python 3.14.0
   - Note that in Release v1.0, the RGB values are not able to be highlighted and copied.
 <img width="1217" height="985" alt="Screenshot 2025-12-08 104516" src="https://github.com/user-attachments/assets/ebfef3b6-2435-4394-b895-11e549739b94" />
 
-# Two options for templates to generate: An academic poster and presentation template. Both are in pptx format, and will save to the folder from which the user launched the program. Saving a new pptx file won't overwrite any existing files.
+# PowerPoint Templates
+Two options for templates to generate: An academic poster and presentation template. Both are in pptx format, and will save to the folder from which the user launched the program. Saving a new pptx file won't overwrite any existing files.
 
 1. Poster:
 <img width="1448" height="968" alt="Screenshot 2025-12-08 110739" src="https://github.com/user-attachments/assets/723dca46-10fe-4d2b-b571-7de14b9b823e" />
