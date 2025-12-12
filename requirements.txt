@@ -5,9 +5,3 @@ PIL
 random
 pptx
 pyperclip
-pptx.util
-pptx.dml.color
-pptx.oxml.ns
-pptx.oxml.xmlchemy
-pptx.enum.text
-pptx.enum.shapes
